@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PetGuardian.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0754f7e187a48eda98c62c97d94fcd12ac5c4aee")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e984e9f53125425a4d4872414b418686837be263")]
 [assembly: System.Reflection.AssemblyProductAttribute("PetGuardian.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PetGuardian.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

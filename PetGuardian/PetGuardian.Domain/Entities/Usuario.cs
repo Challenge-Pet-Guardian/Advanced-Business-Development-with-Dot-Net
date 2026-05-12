@@ -57,8 +57,6 @@ public sealed class Usuario : BaseEntity
         EnderecoId = enderecoId;
     }
 
-    // ── comportamento ─────────────────────────────────────────────────────────
-
     public void AtualizarNome(string novoNome)
     {
         if (string.IsNullOrWhiteSpace(novoNome))
