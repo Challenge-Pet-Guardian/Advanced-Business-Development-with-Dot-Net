@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PetGuardian.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e984e9f53125425a4d4872414b418686837be263")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+856790a589a93d41bc3f15a3f0d4f9f1cac77a64")]
 [assembly: System.Reflection.AssemblyProductAttribute("PetGuardian.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PetGuardian.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
