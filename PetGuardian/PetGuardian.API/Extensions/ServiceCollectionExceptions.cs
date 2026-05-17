@@ -8,15 +8,8 @@ using PetGuardian.Infrastructure.Persistence.Repositories;
 
 namespace PetGuardian.API.Extensions;
 
-/// <summary>
-/// Extensões para registrar persistência, repositórios e serviços na injeção de dependências.
-/// </summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>
-    /// Registra o <see cref="PetGuardianContext"/> com Oracle (padrão).
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Quando a connection string não for encontrada.</exception>
     public static IServiceCollection AddPetGuardianDbContext(
         this IServiceCollection services,
         IConfiguration configuration,
@@ -24,7 +17,7 @@ public static class ServiceCollectionExtensions
     {
         var connectionString = configuration.GetConnectionString(connectionStringName)
             ?? throw new InvalidOperationException(
-                $"Connection string '{connectionStringName}' não encontrada. Configure em appsettings.json.");
+                $"Connection string '{connectionStringName}' não encontrada.");
 
         services.AddDbContext<PetGuardianContext>(options =>
             options.UseOracle(connectionString));
@@ -32,35 +25,52 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    /// <summary>
-    /// Registra todas as implementações de repositório como Scoped (um por requisição HTTP).
-    /// </summary>
     public static IServiceCollection AddPetGuardianRepositories(this IServiceCollection services)
     {
-        // Repositórios especializados
-        services.AddScoped<IUsuarioRepository,     UsuarioRepository>();
-        services.AddScoped<IPetRepository,         PetRepository>();
-        services.AddScoped<IAtendimentoRepository, AtendimentoRepository>();
-        services.AddScoped<ITarefaRepository,      TarefaRepository>();
+        // Especializados
+        services.AddScoped<IUsuarioRepository,         UsuarioRepository>();
+        services.AddScoped<IPetRepository,             PetRepository>();
+        services.AddScoped<IAtendimentoRepository,     AtendimentoRepository>();
+        services.AddScoped<ITarefaRepository,          TarefaRepository>();
+        services.AddScoped<IHistoricoPontosRepository, HistoricoPontosRepository>();
+        services.AddScoped<IPontosTotaisRepository,    PontosTotaisRepository>();
+        services.AddScoped<ISequenciaRepository,       SequenciaRepository>();
+        services.AddScoped<IUsuarioPetRepository,      UsuarioPetRepository>();
 
-        // Repositórios genéricos (Endereco, Familia, Veterinaria)
+        // Genéricos (Endereco, Bairro, Cidade, Estado, Familia,
+        //            Raca, Status, TipoAtend, Telefone, Veterinaria)
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
         return services;
     }
 
-    /// <summary>
-    /// Registra todos os serviços de aplicação como Scoped.
-    /// </summary>
     public static IServiceCollection AddPetGuardianServices(this IServiceCollection services)
     {
-        services.AddScoped<IEnderecoService,   EnderecoService>();
+        // Hierarquia de endereço
+        services.AddScoped<IEstadoService,   EstadoService>();
+        services.AddScoped<ICidadeService,   CidadeService>();
+        services.AddScoped<IBairroService,   BairroService>();
+        services.AddScoped<IEnderecoService, EnderecoService>();
+
+        // Lookup
+        services.AddScoped<IRacaService,      RacaService>();
+        services.AddScoped<IStatusService,    StatusService>();
+        services.AddScoped<ITipoAtendService, TipoAtendService>();
+        services.AddScoped<ITelefoneService,  TelefoneService>();
+
+        // Core
         services.AddScoped<IFamiliaService,    FamiliaService>();
-        services.AddScoped<IPetService,        PetService>();
         services.AddScoped<IUsuarioService,    UsuarioService>();
+        services.AddScoped<IPetService,        PetService>();
         services.AddScoped<IVeterinariaService,VeterinariaService>();
         services.AddScoped<IAtendimentoService,AtendimentoService>();
         services.AddScoped<ITarefaService,     TarefaService>();
+
+        // Gamificação / join
+        services.AddScoped<IUsuarioPetService,      UsuarioPetService>();
+        services.AddScoped<IHistoricoPontosService, HistoricoPontosService>();
+        services.AddScoped<IPontosTotaisService,    PontosTotaisService>();
+        services.AddScoped<ISequenciaService,       SequenciaService>();
 
         return services;
     }

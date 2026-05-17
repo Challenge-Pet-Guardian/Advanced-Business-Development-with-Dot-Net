@@ -4,63 +4,56 @@ using PetGuardian.Domain.Exceptions;
 namespace PetGuardian.Domain.Entities;
 
 /// <summary>
-/// Usuário do sistema. Pertence a uma <see cref="Familia"/>, possui um
-/// <see cref="Endereco"/> exclusivo (1:1) e pode ser responsável por tarefas de cuidado.
+/// Usuário do sistema. Pertence a uma <see cref="Familia"/>, possui endereço e telefone exclusivos (1:1).
+/// Relacionamento N:N com <see cref="Pet"/> via <see cref="UsuarioPet"/>.
 /// </summary>
-/// <remarks>
-/// A senha é armazenada como texto no banco (restrição do modelo Oracle: VARCHAR2(20)).
-/// Em ambiente produtivo recomenda-se ampliar o campo e aplicar hash (ex.: BCrypt).
-/// </remarks>
 public sealed class Usuario : BaseEntity
 {
-    public string Nome        { get; private set; } = string.Empty;
-    public string Email       { get; private set; } = string.Empty;
-    public string Senha       { get; private set; } = string.Empty;
-    public string Telefone    { get; private set; } = string.Empty;
-    
-    // N:1
-    public Guid     FamiliaId { get; private set; }
-    public Familia? Familia   { get; private set; }
+    public string Nome  { get; private set; } = string.Empty;
+    public string Email { get; private set; } = string.Empty;
+    public string Senha { get; private set; } = string.Empty;
 
-    // 1:1
     public Guid      EnderecoId { get; private set; }
     public Endereco? Endereco   { get; private set; }
 
-    // 1:N
-    public List<Tarefa> Tarefas { get; private set; } = [];
+    public Guid      FamiliaId { get; private set; }
+    public Familia?  Familia   { get; private set; }
 
-    // EF Core
-    private Usuario()
-    {
-    }
+    public Guid      TelefoneId { get; private set; }
+    public Telefone? Telefone   { get; private set; }
 
-    public Usuario(
-        string nome,
-        string email,
-        string senha,
-        string telefone,
-        Guid   familiaId,
-        Guid   enderecoId)
+    // Navegações
+    public List<UsuarioPet>      PetsVinculados { get; private set; } = [];
+    public List<Tarefa>          Tarefas        { get; private set; } = [];
+    public List<HistoricoPontos> Historico      { get; private set; } = [];
+    public PontosTotais?         PontosTotais   { get; private set; }
+
+    private Usuario() { }
+
+    public Usuario(string nome, string email, string senha, Guid enderecoId, Guid familiaId, Guid telefoneId)
     {
         AtualizarNome(nome);
         AtualizarEmail(email);
         AtualizarSenha(senha);
-        AtualizarTelefone(telefone);
+
+        if (enderecoId == Guid.Empty)
+            throw new DomainException("O usuário deve ter um endereço válido.");
 
         if (familiaId == Guid.Empty)
             throw new DomainException("O usuário deve pertencer a uma família válida.");
 
-        if (enderecoId == Guid.Empty)
-            throw new DomainException("O usuário deve ter um endereço válido associado.");
+        if (telefoneId == Guid.Empty)
+            throw new DomainException("O usuário deve ter um telefone válido.");
 
-        FamiliaId  = familiaId;
         EnderecoId = enderecoId;
+        FamiliaId  = familiaId;
+        TelefoneId = telefoneId;
     }
 
     public void AtualizarNome(string novoNome)
     {
         if (string.IsNullOrWhiteSpace(novoNome))
-            throw new DomainException("O nome do usuário não pode ser vazio.");
+            throw new DomainException("O nome não pode ser vazio.");
 
         novoNome = novoNome.Trim();
 
@@ -72,13 +65,10 @@ public sealed class Usuario : BaseEntity
 
     public void AtualizarEmail(string novoEmail)
     {
-        if (string.IsNullOrWhiteSpace(novoEmail))
-            throw new DomainException("O e-mail não pode ser vazio.");
+        if (string.IsNullOrWhiteSpace(novoEmail) || !novoEmail.Contains('@'))
+            throw new DomainException("O e-mail informado é inválido.");
 
         novoEmail = novoEmail.Trim();
-
-        if (!novoEmail.Contains('@'))
-            throw new DomainException("O e-mail informado é inválido.");
 
         if (novoEmail.Length > 50)
             throw new DomainException("O e-mail deve ter no máximo 50 caracteres.");
@@ -88,29 +78,12 @@ public sealed class Usuario : BaseEntity
 
     public void AtualizarSenha(string novaSenha)
     {
-        if (string.IsNullOrWhiteSpace(novaSenha))
-            throw new DomainException("A senha não pode ser vazia.");
-
-        if (novaSenha.Length < 6)
+        if (string.IsNullOrWhiteSpace(novaSenha) || novaSenha.Length < 6)
             throw new DomainException("A senha deve ter pelo menos 6 caracteres.");
 
-        // Restrição do modelo Oracle: VARCHAR2(20)
         if (novaSenha.Length > 20)
             throw new DomainException("A senha deve ter no máximo 20 caracteres.");
 
         Senha = novaSenha;
-    }
-
-    public void AtualizarTelefone(string novoTelefone)
-    {
-        if (string.IsNullOrWhiteSpace(novoTelefone))
-            throw new DomainException("O telefone não pode ser vazio.");
-
-        novoTelefone = novoTelefone.Trim();
-
-        if (novoTelefone.Length > 11)
-            throw new DomainException("O telefone deve ter no máximo 11 dígitos.");
-
-        Telefone = novoTelefone;
     }
 }

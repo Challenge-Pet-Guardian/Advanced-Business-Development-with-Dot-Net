@@ -4,32 +4,27 @@ using PetGuardian.Domain.Exceptions;
 namespace PetGuardian.Domain.Entities;
 
 /// <summary>
-/// Família que agrega <see cref="Usuario"/>s e <see cref="Pet"/>s.
-/// Um pet pertence a uma família; um usuário também pertence a uma família.
+/// Família que agrega <see cref="Usuario"/>s. Possui uma <see cref="Sequencia"/> de streak (1:1).
 /// </summary>
 public sealed class Familia : BaseEntity
 {
-    public string Nome { get; private set; } = string.Empty;
+    public string NomeFamilia { get; private set; } = string.Empty;
 
-    // 1:N
     public List<Usuario> Usuarios { get; private set; } = [];
-    public List<Pet>     Pets     { get; private set; } = [];
+    public Sequencia?    Sequencia { get; private set; }
 
-    // EF Core
-    private Familia()
-    {
-    }
+    private Familia() { }
 
-    public Familia(string nome)
+    public Familia(string nomeFamilia)
     {
-        if (string.IsNullOrWhiteSpace(nome))
+        if (string.IsNullOrWhiteSpace(nomeFamilia))
             throw new DomainException("O nome da família não pode ser vazio.");
 
-        nome = nome.Trim();
+        nomeFamilia = nomeFamilia.Trim();
 
-        if (nome.Length > 30)
+        if (nomeFamilia.Length > 30)
             throw new DomainException("O nome da família deve ter no máximo 30 caracteres.");
 
-        Nome = nome;
+        NomeFamilia = nomeFamilia;
     }
 }

@@ -5,74 +5,45 @@ using PetGuardian.Domain.Entities;
 
 namespace PetGuardian.Application.Services.Implementations;
 
-/// <summary>
-/// Orquestra os casos de uso de tarefa de cuidado.
-/// </summary>
 public sealed class TarefaService(
     ITarefaRepository tarefaRepository,
     IPetRepository petRepository,
     IUsuarioRepository usuarioRepository,
-    IRepository<Familia> familiaRepository) : ITarefaService
+    IRepository<Status> statusRepository) : ITarefaService
 {
-    /// <inheritdoc />
-    public IReadOnlyList<TarefaResponse> GetAll()
-    {
-        return tarefaRepository.GetAll()
-            .Select(TarefaResponse.FromDomain)
-            .ToList();
-    }
+    public IReadOnlyList<TarefaResponse> GetAll() =>
+        tarefaRepository.GetAll().Select(TarefaResponse.FromDomain).ToList();
 
-    /// <inheritdoc />
     public TarefaResponse? GetById(Guid id)
     {
-        var tarefa = tarefaRepository.GetById(id);
-        return tarefa is null ? null : TarefaResponse.FromDomain(tarefa);
+        var t = tarefaRepository.GetById(id);
+        return t is null ? null : TarefaResponse.FromDomain(t);
     }
 
-    /// <inheritdoc />
-    public IReadOnlyList<TarefaResponse> GetByPetId(Guid petId)
-    {
-        return tarefaRepository.GetByPetId(petId)
-            .Select(TarefaResponse.FromDomain)
-            .ToList();
-    }
+    public IReadOnlyList<TarefaResponse> GetByPetId(Guid petId) =>
+        tarefaRepository.GetByPetId(petId).Select(TarefaResponse.FromDomain).ToList();
 
-    /// <inheritdoc />
-    public IReadOnlyList<TarefaResponse> GetByUsuarioId(Guid usuarioId)
-    {
-        return tarefaRepository.GetByUsuarioId(usuarioId)
-            .Select(TarefaResponse.FromDomain)
-            .ToList();
-    }
+    public IReadOnlyList<TarefaResponse> GetByUsuarioId(Guid usuarioId) =>
+        tarefaRepository.GetByUsuarioId(usuarioId).Select(TarefaResponse.FromDomain).ToList();
 
-    /// <inheritdoc />
-    public IReadOnlyList<TarefaResponse> GetByFamiliaId(Guid familiaId)
-    {
-        return tarefaRepository.GetByFamiliaId(familiaId)
-            .Select(TarefaResponse.FromDomain)
-            .ToList();
-    }
+    public IReadOnlyList<TarefaResponse> GetByStatusId(Guid statusId) =>
+        tarefaRepository.GetByStatusId(statusId).Select(TarefaResponse.FromDomain).ToList();
 
-    /// <inheritdoc />
     public TarefaResponse Create(TarefaRequest request)
     {
-        if (!usuarioRepository.ExistsById(request.UsuarioId))
-            throw new InvalidOperationException("Usuário não encontrado.");
-
         if (!petRepository.ExistsById(request.PetId))
             throw new InvalidOperationException("Pet não encontrado.");
 
-        if (!familiaRepository.ExistsById(request.FamiliaId))
-            throw new InvalidOperationException("Família não encontrada.");
+        if (!usuarioRepository.ExistsById(request.UsuarioId))
+            throw new InvalidOperationException("Usuário não encontrado.");
+
+        if (!statusRepository.ExistsById(request.StatusId))
+            throw new InvalidOperationException("Status não encontrado.");
 
         var tarefa = request.ToDomain();
         tarefaRepository.Add(tarefa);
         return TarefaResponse.FromDomain(tarefa);
     }
 
-    /// <inheritdoc />
-    public bool Delete(Guid id)
-    {
-        return tarefaRepository.Delete(id);
-    }
+    public bool Delete(Guid id) => tarefaRepository.Delete(id);
 }

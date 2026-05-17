@@ -5,45 +5,32 @@ using PetGuardian.Domain.Entities;
 
 namespace PetGuardian.Application.Services.Implementations;
 
-/// <summary>
-/// Orquestra os casos de uso de veterinária.
-/// </summary>
 public sealed class VeterinariaService(
     IRepository<Veterinaria> veterinariaRepository,
-    IRepository<Endereco> enderecoRepository) : IVeterinariaService
+    IRepository<Endereco> enderecoRepository,
+    IRepository<Telefone> telefoneRepository) : IVeterinariaService
 {
-    /// <inheritdoc />
-    public IReadOnlyList<VeterinariaResponse> GetAll()
-    {
-        return veterinariaRepository.GetAll()
-            .Select(VeterinariaResponse.FromDomain)
-            .ToList();
-    }
+    public IReadOnlyList<VeterinariaResponse> GetAll() =>
+        veterinariaRepository.GetAll().Select(VeterinariaResponse.FromDomain).ToList();
 
-    /// <inheritdoc />
     public VeterinariaResponse? GetById(Guid id)
     {
-        var veterinaria = veterinariaRepository.GetById(id);
-        return veterinaria is null ? null : VeterinariaResponse.FromDomain(veterinaria);
+        var vet = veterinariaRepository.GetById(id);
+        return vet is null ? null : VeterinariaResponse.FromDomain(vet);
     }
 
-    /// <inheritdoc />
     public VeterinariaResponse Create(VeterinariaRequest request)
     {
-        if (veterinariaRepository.ExistsByNome(request.Nome))
-            throw new InvalidOperationException("Já existe uma veterinária com este nome.");
-
         if (!enderecoRepository.ExistsById(request.EnderecoId))
             throw new InvalidOperationException("Endereço não encontrado.");
 
-        var veterinaria = request.ToDomain();
-        veterinariaRepository.Add(veterinaria);
-        return VeterinariaResponse.FromDomain(veterinaria);
+        if (!telefoneRepository.ExistsById(request.TelefoneId))
+            throw new InvalidOperationException("Telefone não encontrado.");
+
+        var vet = request.ToDomain();
+        veterinariaRepository.Add(vet);
+        return VeterinariaResponse.FromDomain(vet);
     }
 
-    /// <inheritdoc />
-    public bool Delete(Guid id)
-    {
-        return veterinariaRepository.Delete(id);
-    }
+    public bool Delete(Guid id) => veterinariaRepository.Delete(id);
 }

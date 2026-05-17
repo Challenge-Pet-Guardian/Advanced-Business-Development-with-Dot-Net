@@ -5,61 +5,51 @@ using PetGuardian.Domain.Enums;
 
 namespace PetGuardian.Infrastructure.Persistence.Configurations;
 
-/// <summary>
-/// Configuração EF Core para a entidade <see cref="Pet"/>.
-/// <see cref="PortePet"/> e <see cref="SexoPet"/> são persistidos como VARCHAR2 para legibilidade no Oracle.
-/// </summary>
 public sealed class PetConfiguration : IEntityTypeConfiguration<Pet>
 {
     public void Configure(EntityTypeBuilder<Pet> builder)
     {
         builder.ToTable("PG_PETS");
-
         builder.HasKey(p => p.Id);
+        builder.Property(p => p.Id).HasColumnName("ID_PET");
 
-        builder.Property(p => p.Id)
-            .HasColumnName("ID_PET");
+        builder.Property(p => p.Nome).HasColumnName("NOME").HasMaxLength(30).IsRequired();
+        builder.Property(p => p.Idade).HasColumnName("IDADE").HasColumnType("NUMBER(2)").IsRequired();
 
-        builder.Property(p => p.Nome)
-            .HasColumnName("NOME")
-            .HasMaxLength(30)
-            .IsRequired();
-
-        builder.Property(p => p.Raca)
-            .HasColumnName("RACA")
-            .HasMaxLength(20)
-            .IsRequired();
-
-        builder.Property(p => p.Porte)
-            .HasColumnName("PORTE")
-            .HasMaxLength(20)
-            .HasConversion<string>()
-            .IsRequired();
-
+        // CHECK: sexo IN ('M','F')
         builder.Property(p => p.Sexo)
             .HasColumnName("SEXO")
+            .HasMaxLength(1)
+            .HasConversion(
+                v => v == SexoPet.Macho ? "M" : "F",
+                v => v == "M" ? SexoPet.Macho : SexoPet.Femea)
+            .IsRequired();
+
+        // CHECK: porte IN ('GRANDE','MEDIO','PEQUENO')
+        builder.Property(p => p.Porte)
+            .HasColumnName("PORTE")
             .HasMaxLength(10)
-            .HasConversion<string>()
+            .HasConversion(
+                v => v.ToString().ToUpperInvariant(),
+                v => Enum.Parse<PortePet>(v, true))
             .IsRequired();
 
-        builder.Property(p => p.Idade)
-            .HasColumnName("IDADE")
-            .HasColumnType("NUMBER(2)")
-            .IsRequired();
+        builder.Property(p => p.Castrado).HasColumnName("CASTRADO").HasColumnType("NUMBER").IsRequired();
 
-        builder.Property(p => p.Castrado)
-            .HasColumnName("CASTRADO")
-            .HasColumnType("NUMBER(1)")
-            .IsRequired();
-
-        // N:1
-        builder.Property(p => p.FamiliaId)
-            .HasColumnName("ID_FAMILIA")
-            .IsRequired();
-
-        builder.HasOne(p => p.Familia)
-            .WithMany(f => f.Pets)
-            .HasForeignKey(p => p.FamiliaId)
+        builder.Property(p => p.RacaId).HasColumnName("ID_RACA").IsRequired();
+        builder.HasOne(p => p.Raca)
+            .WithMany(r => r.Pets)
+            .HasForeignKey(p => p.RacaId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(p => p.Atendimentos)
+            .WithOne(a => a.Pet)
+            .HasForeignKey(a => a.PetId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(p => p.Tarefas)
+            .WithOne(t => t.Pet)
+            .HasForeignKey(t => t.PetId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

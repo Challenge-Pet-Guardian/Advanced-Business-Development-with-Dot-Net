@@ -4,26 +4,23 @@ using PetGuardian.Domain.Exceptions;
 namespace PetGuardian.Domain.Entities;
 
 /// <summary>
-/// Clínica / hospital veterinário. Possui um <see cref="Endereco"/> exclusivo (1:1)
-/// e é responsável por vários <see cref="Atendimento"/>s.
+/// Clínica/hospital veterinário. Possui endereço e telefone exclusivos (1:1).
 /// </summary>
 public sealed class Veterinaria : BaseEntity
 {
     public string Nome { get; private set; } = string.Empty;
 
-    // 1:1 
     public Guid      EnderecoId { get; private set; }
     public Endereco? Endereco   { get; private set; }
 
-    // 1:N
+    public Guid      TelefoneId { get; private set; }
+    public Telefone? Telefone   { get; private set; }
+
     public List<Atendimento> Atendimentos { get; private set; } = [];
 
-    // EF Core
-    private Veterinaria()
-    {
-    }
+    private Veterinaria() { }
 
-    public Veterinaria(string nome, Guid enderecoId)
+    public Veterinaria(string nome, Guid enderecoId, Guid telefoneId)
     {
         if (string.IsNullOrWhiteSpace(nome))
             throw new DomainException("O nome da veterinária não pode ser vazio.");
@@ -34,9 +31,13 @@ public sealed class Veterinaria : BaseEntity
             throw new DomainException("O nome da veterinária deve ter no máximo 30 caracteres.");
 
         if (enderecoId == Guid.Empty)
-            throw new DomainException("A veterinária deve ter um endereço válido associado.");
+            throw new DomainException("A veterinária deve ter um endereço válido.");
+
+        if (telefoneId == Guid.Empty)
+            throw new DomainException("A veterinária deve ter um telefone válido.");
 
         Nome       = nome;
         EnderecoId = enderecoId;
+        TelefoneId = telefoneId;
     }
 }

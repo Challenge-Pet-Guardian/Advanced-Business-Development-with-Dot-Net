@@ -2,11 +2,7 @@
 
 namespace PetGuardian.Application.DTOs;
 
-/// <summary>
-/// DTO de resposta para família.
-/// </summary>
-public record FamiliaResponse(Guid Id, string Nome)
+public record FamiliaResponse(Guid Id, string NomeFamilia)
 {
-    /// <summary>Mapeia <see cref="Familia"/> para DTO.</summary>
-    public static FamiliaResponse FromDomain(Familia f) => new(f.Id, f.Nome);
+    public static FamiliaResponse FromDomain(Familia f) => new(f.Id, f.NomeFamilia);
 }

@@ -1,54 +1,55 @@
 ﻿using PetGuardian.Domain.Common;
-using PetGuardian.Domain.Enums;
 using PetGuardian.Domain.Exceptions;
 
 namespace PetGuardian.Domain.Entities;
 
 /// <summary>
-/// Tarefa de cuidado associada a um <see cref="Pet"/>, atribuída a um <see cref="Usuario"/>
-/// e vinculada à <see cref="Familia"/> dona do pet.
+/// Tarefa de cuidado vinculada a um <see cref="Pet"/> e a um <see cref="Usuario"/> responsável.
+/// Ao ser concluída gera um <see cref="HistoricoPontos"/>.
 /// </summary>
 public sealed class Tarefa : BaseEntity
 {
-    public string      Titulo    { get; private set; } = string.Empty;
-    public string      Descricao { get; private set; } = string.Empty;
-    public DateTime    Criacao   { get; private set; }
-    public DateTime    Prazo     { get; private set; }
-    public StatusTarefa Status   { get; private set; }
+    public string   Titulo       { get; private set; } = string.Empty;
+    public int      PontosTarefa { get; private set; }
+    public string   Descricao    { get; private set; } = string.Empty;
+    public DateTime Criacao      { get; private set; }
+    public DateTime Prazo        { get; private set; }
 
-    // N:1
-    public Guid      UsuarioId { get; private set; }
-    public Usuario?  Usuario   { get; private set; }
+    public Guid     PetId     { get; private set; }
+    public Pet?     Pet       { get; private set; }
 
-    public Guid  PetId { get; private set; }
-    public Pet?  Pet   { get; private set; }
+    public Guid     UsuarioId { get; private set; }
+    public Usuario? Usuario   { get; private set; }
 
-    public Guid     FamiliaId { get; private set; }
-    public Familia? Familia   { get; private set; }
+    public Guid    StatusId { get; private set; }
+    public Status? Status   { get; private set; }
 
-    // EF Core
-    private Tarefa()
-    {
-    }
+    public List<HistoricoPontos> HistoricoPontos { get; private set; } = [];
+
+    private Tarefa() { }
 
     public Tarefa(
-        string titulo,
-        string descricao,
+        string   titulo,
+        int      pontosTarefa,
+        string   descricao,
         DateTime prazo,
-        Guid usuarioId,
-        Guid petId,
-        Guid familiaId)
+        Guid     petId,
+        Guid     usuarioId,
+        Guid     statusId)
     {
         if (string.IsNullOrWhiteSpace(titulo))
-            throw new DomainException("O título da tarefa não pode ser vazio.");
+            throw new DomainException("O título não pode ser vazio.");
 
         titulo = titulo.Trim();
 
         if (titulo.Length > 30)
             throw new DomainException("O título deve ter no máximo 30 caracteres.");
 
+        if (pontosTarefa < 0)
+            throw new DomainException("Os pontos da tarefa não podem ser negativos.");
+
         if (string.IsNullOrWhiteSpace(descricao))
-            throw new DomainException("A descrição da tarefa não pode ser vazia.");
+            throw new DomainException("A descrição não pode ser vazia.");
 
         descricao = descricao.Trim();
 
@@ -58,47 +59,31 @@ public sealed class Tarefa : BaseEntity
         if (prazo <= DateTime.UtcNow)
             throw new DomainException("O prazo deve ser uma data/hora futura.");
 
-        if (usuarioId == Guid.Empty)
-            throw new DomainException("A tarefa deve ter um usuário responsável válido.");
-
         if (petId == Guid.Empty)
             throw new DomainException("A tarefa deve estar associada a um pet válido.");
 
-        if (familiaId == Guid.Empty)
-            throw new DomainException("A tarefa deve estar associada a uma família válida.");
+        if (usuarioId == Guid.Empty)
+            throw new DomainException("A tarefa deve ter um usuário responsável válido.");
 
-        Titulo = titulo;
-        Descricao = descricao;
-        Criacao = DateTime.UtcNow;
-        Prazo = prazo;
-        Status = StatusTarefa.Pendente;
-        UsuarioId = usuarioId;
-        PetId = petId;
-        FamiliaId = familiaId;
+        if (statusId == Guid.Empty)
+            throw new DomainException("O status da tarefa é obrigatório.");
+
+        Titulo       = titulo;
+        PontosTarefa = pontosTarefa;
+        Descricao    = descricao;
+        Criacao      = DateTime.UtcNow;
+        Prazo        = prazo;
+        PetId        = petId;
+        UsuarioId    = usuarioId;
+        StatusId     = statusId;
     }
 
-    /// <summary>
-    /// Avança o status da tarefa. Não reabre tarefas já canceladas.
-    /// </summary>
-    public void AtualizarStatus(StatusTarefa novoStatus)
-    {
-        if (Status == StatusTarefa.Cancelada)
-            throw new DomainException("Não é possível alterar o status de uma tarefa cancelada.");
-
-        Status = novoStatus;
-    }
-
-    /// <summary>
-    /// Estende o prazo da tarefa para uma data futura.
-    /// </summary>
     public void EstenderPrazo(DateTime novoPrazo)
     {
         if (novoPrazo <= DateTime.UtcNow)
-            throw new DomainException("O novo prazo deve ser uma data/hora futura.");
-
+            throw new DomainException("O novo prazo deve ser futuro.");
         if (novoPrazo <= Prazo)
             throw new DomainException("O novo prazo deve ser posterior ao prazo atual.");
-
         Prazo = novoPrazo;
     }
 }

@@ -5,37 +5,27 @@ using PetGuardian.Domain.Entities;
 
 namespace PetGuardian.Application.Services.Implementations;
 
-/// <summary>
-/// Orquestra os casos de uso de usuário.
-/// </summary>
 public sealed class UsuarioService(
     IUsuarioRepository usuarioRepository,
     IRepository<Familia> familiaRepository,
-    IRepository<Endereco> enderecoRepository) : IUsuarioService
+    IRepository<Endereco> enderecoRepository,
+    IRepository<Telefone> telefoneRepository) : IUsuarioService
 {
-    /// <inheritdoc />
-    public IReadOnlyList<UsuarioResponse> GetAll()
-    {
-        return usuarioRepository.GetAll()
-            .Select(UsuarioResponse.FromDomain)
-            .ToList();
-    }
+    public IReadOnlyList<UsuarioResponse> GetAll() =>
+        usuarioRepository.GetAll().Select(UsuarioResponse.FromDomain).ToList();
 
-    /// <inheritdoc />
     public UsuarioResponse? GetById(Guid id)
     {
         var usuario = usuarioRepository.GetById(id);
         return usuario is null ? null : UsuarioResponse.FromDomain(usuario);
     }
 
-    /// <inheritdoc />
     public UsuarioResponse? GetByEmail(string email)
     {
         var usuario = usuarioRepository.GetByEmail(email);
         return usuario is null ? null : UsuarioResponse.FromDomain(usuario);
     }
 
-    /// <inheritdoc />
     public UsuarioResponse Create(UsuarioRequest request)
     {
         if (usuarioRepository.ExistsByEmail(request.Email))
@@ -47,14 +37,13 @@ public sealed class UsuarioService(
         if (!enderecoRepository.ExistsById(request.EnderecoId))
             throw new InvalidOperationException("Endereço não encontrado.");
 
+        if (!telefoneRepository.ExistsById(request.TelefoneId))
+            throw new InvalidOperationException("Telefone não encontrado.");
+
         var usuario = request.ToDomain();
         usuarioRepository.Add(usuario);
         return UsuarioResponse.FromDomain(usuario);
     }
 
-    /// <inheritdoc />
-    public bool Delete(Guid id)
-    {
-        return usuarioRepository.Delete(id);
-    }
+    public bool Delete(Guid id) => usuarioRepository.Delete(id);
 }

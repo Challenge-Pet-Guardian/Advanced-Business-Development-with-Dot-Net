@@ -34,13 +34,13 @@ public class PetController(IPetService petService) : ControllerBase
         return Ok(pet);
     }
 
-    /// <summary>Lista todos os pets de uma família.</summary>
-    /// <param name="familiaId">Id da família.</param>
+    /// <summary>Lista todos os pets de uma raça.</summary>
+    /// <param name="racaId">Id da raça.</param>
     /// <response code="200">Lista retornada (pode ser vazia).</response>
-    [HttpGet("by-familia/{familiaId:guid}")]
+    [HttpGet("by-raca/{racaId:guid}")]
     [ProducesResponseType(typeof(IReadOnlyList<PetResponse>), StatusCodes.Status200OK)]
-    public IActionResult GetByFamilia(Guid familiaId) =>
-        Ok(petService.GetByFamiliaId(familiaId));
+    public IActionResult GetByRaca(Guid racaId) =>
+        Ok(petService.GetByRacaId(racaId));
 
     /// <summary>Cadastra um pet.</summary>
     /// <param name="request">Dados do pet.</param>

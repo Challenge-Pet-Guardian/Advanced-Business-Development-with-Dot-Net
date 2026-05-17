@@ -2,12 +2,7 @@
 
 namespace PetGuardian.Application.DTOs;
 
-/// <summary>
-/// DTO de resposta para veterinária.
-/// </summary>
-public record VeterinariaResponse(Guid Id, string Nome, Guid EnderecoId)
+public record VeterinariaResponse(Guid Id, string Nome, Guid EnderecoId, Guid TelefoneId)
 {
-    /// <summary>Mapeia <see cref="Veterinaria"/> para DTO.</summary>
-    public static VeterinariaResponse FromDomain(Veterinaria v) =>
-        new(v.Id, v.Nome, v.EnderecoId);
+    public static VeterinariaResponse FromDomain(Veterinaria v) => new(v.Id, v.Nome, v.EnderecoId, v.TelefoneId);
 }
